@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Search the LFMM provider network by specialty, body area, case type, and location."
+    />
+    <title>LFMM Provider Navigator</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="LFMM Provider Navigator home">
+          <span class="brand-mark" aria-hidden="true">LF</span>
+          <span>
+            <strong>Provider Navigator</strong>
+            <small>Labor Force Medical Management</small>
+          </span>
+        </a>
+        <div class="topbar-meta">
+          <span class="network-pill"><i></i> Network directory</span>
+          <button class="icon-button" type="button" aria-label="Help">?</button>
+        </div>
+      </header>
+
+      <section class="search-deck" aria-label="Provider search">
+        <div class="search-field primary-search">
+          <span class="search-icon" aria-hidden="true"></span>
+          <label for="provider-search">Search providers and services</label>
+          <input
+            id="provider-search"
+            type="search"
+            autocomplete="off"
+            placeholder="Doctor, specialty, body area, facility..."
+          />
+          <kbd>⌘ K</kbd>
+        </div>
+        <div class="search-field location-search">
+          <span class="pin-icon" aria-hidden="true"></span>
+          <label for="location-search">Near</label>
+          <input id="location-search" type="search" placeholder="City or ZIP" />
+        </div>
+        <button class="search-button" id="search-button" type="button">Search</button>
+      </section>
+
+      <nav class="filter-strip" aria-label="Quick filters">
+        <button class="filter-chip active" type="button" data-case="all">All cases</button>
+        <button class="filter-chip" type="button" data-case="Workers’ Comp">Workers’ Comp</button>
+        <button class="filter-chip" type="button" data-case="Personal Injury">Personal Injury</button>
+        <label class="select-chip">
+          <span>Specialty</span>
+          <select id="specialty-filter" aria-label="Filter by specialty">
+            <option value="all">All specialties</option>
+            <option value="Orthopedic">Orthopedic</option>
+            <option value="Spine">Spine</option>
+            <option value="General Surgery">General Surgery</option>
+            <option value="Podiatry">Podiatry</option>
+          </select>
+        </label>
+        <label class="select-chip">
+          <span>Body area</span>
+          <select id="body-filter" aria-label="Filter by body area">
+            <option value="all">Any body area</option>
+            <option value="Spine">Spine</option>
+            <option value="Shoulder">Shoulder</option>
+            <option value="Knee">Knee</option>
+            <option value="Hand">Hand / wrist</option>
+            <option value="Hip">Hip</option>
+            <option value="Foot">Foot / ankle</option>
+          </select>
+        </label>
+        <button class="filter-chip more-filter" id="more-filter" type="button" aria-expanded="false">
+          More filters <span id="advanced-count">0</span>
+        </button>
+        <button class="clear-button" id="clear-filters" type="button">Clear</button>
+      </nav>
+
+      <main class="workspace">
+        <section class="results-panel" aria-labelledby="results-heading">
+          <div class="results-toolbar">
+            <div>
+              <p class="eyebrow">MATCHING NETWORK</p>
+              <h1 id="results-heading"><span id="result-count">6</span> providers</h1>
+            </div>
+            <label class="sort-control">
+              <span>Sort</span>
+              <select id="sort-select" aria-label="Sort results">
+                <option value="recommended">Recommended</option>
+                <option value="name">Name A–Z</option>
+                <option value="city">City</option>
+              </select>
+            </label>
+          </div>
+          <div class="active-summary" id="active-summary">
+            <span>73 network listings</span>
+            <span>26 detailed profiles</span>
+            <span>24 mapped locations</span>
+          </div>
+          <div class="provider-list" id="provider-list" aria-live="polite"></div>
+          <div class="empty-state" id="empty-state" hidden>
+            <div class="empty-icon">⌁</div>
+            <h2>No exact matches</h2>
+            <p>Try another body area, case type, or nearby city.</p>
+            <button type="button" id="empty-reset">Reset filters</button>
+          </div>
+        </section>
+
+        <section class="map-panel" aria-label="Provider locations">
+          <div id="map"></div>
+          <div class="map-status" id="map-status">
+            <span class="pulse-dot"></span>
+            Map and list are linked
+          </div>
+          <button class="map-research" id="map-research" type="button">Search this area</button>
+          <div class="map-legend">
+            <span><i class="legend-dot preferred"></i> Detailed profile</span>
+            <span><i class="legend-dot network"></i> Multiple providers</span>
+          </div>
+        </section>
+      </main>
+      <button class="mobile-view-toggle" id="mobile-view-toggle" type="button" aria-label="Switch between list and map">
+        <span class="mobile-list-label">Map view</span>
+        <span class="mobile-map-label">List view</span>
+      </button>
+    </div>
+
+    <div class="scrim" id="scrim" hidden></div>
+    <aside class="filter-sheet" id="filter-sheet" aria-label="Advanced filters" aria-hidden="true">
+      <div class="filter-sheet-head">
+        <div>
+          <p class="detail-kicker">REFINE RESULTS</p>
+          <h2>More filters</h2>
+        </div>
+        <button class="sheet-close" id="filter-close" type="button" aria-label="Close filters">×</button>
+      </div>
+      <fieldset class="filter-group">
+        <legend>Directory coverage</legend>
+        <label class="check-row"><input id="detailed-only" type="checkbox" /> <span><strong>Detailed profiles only</strong><small>Has an address and office contact details</small></span></label>
+        <label class="check-row"><input id="mapped-only" type="checkbox" /> <span><strong>Mapped locations only</strong><small>Can be displayed on the map</small></span></label>
+      </fieldset>
+      <fieldset class="filter-group">
+        <legend>Surgery center access</legend>
+        <label class="radio-row"><input type="radio" name="facility" value="all" checked /> <span>Any center</span></label>
+        <label class="radio-row"><input type="radio" name="facility" value="ALL" /> <span>All centers</span></label>
+        <label class="radio-row"><input type="radio" name="facility" value="FK-WD" /> <span>Fullerton Kimball / Western Diversey</span></label>
+        <label class="radio-row"><input type="radio" name="facility" value="ASC" /> <span>Aiden Surgery Center</span></label>
+      </fieldset>
+      <fieldset class="filter-group">
+        <legend>Profile status</legend>
+        <label class="check-row"><input id="exclude-pending" type="checkbox" /> <span><strong>Exclude pending listings</strong><small>Hide providers marked pending in the source</small></span></label>
+      </fieldset>
+      <div class="filter-sheet-actions">
+        <button id="advanced-reset" type="button">Reset</button>
+        <button class="primary" id="advanced-apply" type="button">Show results</button>
+      </div>
+    </aside>
+    <aside class="detail-sheet" id="detail-sheet" aria-label="Provider details" aria-hidden="true">
+      <button class="sheet-close" id="sheet-close" type="button" aria-label="Close details">×</button>
+      <div id="detail-content"></div>
+    </aside>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
