@@ -199,6 +199,9 @@ kbd { position: absolute; right: 14px; bottom: 16px; padding: 3px 7px; border: 1
 .restriction-list { margin: 0; padding: 0; display: grid; gap: 8px; list-style: none; }
 .restriction-list li { padding: 10px 12px 10px 34px; position: relative; border-radius: 10px; background: #fff1eb; color: #774029; font-size: 13px; line-height: 1.4; }
 .restriction-list li::before { content: "!"; position: absolute; left: 12px; top: 10px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--orange); font-size: 10px; font-weight: 800; }
+.guide-list { margin: 0; padding: 0; display: grid; gap: 10px; list-style: none; counter-reset: guide-step; }
+.guide-list li { min-height: 38px; padding: 9px 12px 9px 44px; position: relative; border-radius: 10px; background: var(--teal-wash); color: var(--ink-soft); font-size: 13px; line-height: 1.5; counter-increment: guide-step; }
+.guide-list li::before { content: counter(guide-step); position: absolute; left: 10px; top: 9px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; color: #fff; background: var(--teal); font-size: 11px; font-weight: 800; }
 .verification-note { margin: 18px 0 0; padding: 12px; border-radius: 10px; background: #edf4f4; color: #597074; font-size: 12px; line-height: 1.45; }
 .sheet-actions { position: sticky; bottom: -30px; margin: 24px -30px -30px; padding: 16px 30px; display: flex; gap: 10px; background: rgba(255,255,255,.94); border-top: 1px solid var(--line); backdrop-filter: blur(14px); }
 .sheet-actions a { min-height: 44px; flex: 1; display: grid; place-items: center; border-radius: 11px; color: var(--ink); border: 1px solid var(--line-strong); text-decoration: none; font-size: 13px; font-weight: 700; }

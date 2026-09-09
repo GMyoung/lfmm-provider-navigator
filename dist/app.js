@@ -419,6 +419,38 @@ function openDetails(provider) {
   document.querySelector("#sheet-close").focus();
 }
 
+function openHelp() {
+  detailContent.innerHTML = `
+    <div class="detail-hero">
+      <span class="eyebrow">Quick guide</span>
+      <h2>Find the right provider</h2>
+      <p>Search broadly, then narrow the results with filters that match the referral.</p>
+    </div>
+    <section class="detail-section">
+      <h3>Recommended workflow</h3>
+      <ol class="guide-list">
+        <li>Search by provider, specialty, service, practice, city, or ZIP.</li>
+        <li>Choose a specialty and body area, then select Workers’ Comp or Personal Injury when relevant.</li>
+        <li>Use More filters for surgery-center access, complete records, and map availability.</li>
+        <li>Select a result to review office details, case rules, restrictions, directions, and phone number.</li>
+      </ol>
+    </section>
+    <section class="detail-section">
+      <h3>What the badges mean</h3>
+      <div class="detail-grid">
+        <div class="detail-item"><span>Detailed</span><strong>Source packet includes office and case information</strong></div>
+        <div class="detail-item"><span>Roster only</span><strong>Provider is listed, but details still need verification</strong></div>
+      </div>
+    </section>
+    <section class="detail-section">
+      <h3>Before making a referral</h3>
+      <p class="verification-note">Always verify current availability, case acceptance, office hours, and contact details. Internal referral, records, and billing contacts are intentionally hidden in this public prototype.</p>
+    </section>
+  `;
+  openPanel(detailSheet);
+  document.querySelector("#sheet-close").focus();
+}
+
 function openFilters() {
   document.querySelector("#detailed-only").checked = state.detailedOnly;
   document.querySelector("#mapped-only").checked = state.mappedOnly;
@@ -510,6 +542,7 @@ document.querySelector("#clear-filters").addEventListener("click", resetFilters)
 document.querySelector("#empty-reset").addEventListener("click", resetFilters);
 document.querySelector("#sheet-close").addEventListener("click", closePanels);
 document.querySelector("#filter-close").addEventListener("click", closePanels);
+document.querySelector("#help-button").addEventListener("click", openHelp);
 document.querySelector("#more-filter").addEventListener("click", openFilters);
 document.querySelector("#advanced-reset").addEventListener("click", resetAdvancedControls);
 document.querySelector("#advanced-apply").addEventListener("click", applyAdvancedFilters);
