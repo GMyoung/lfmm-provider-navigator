@@ -3,88 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Search the LFMM provider network by specialty, body area, case type, and location."
-    />
+    <meta name="description" content="Search the LFMM provider network by specialty, body area, case type, distance, and location." />
     <title>LFMM Provider Navigator</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230f766e'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial' font-size='29' font-weight='700' fill='white'%3ELF%3C/text%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://tile.openstreetmap.org" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="demo-banner" id="demo-banner" hidden>
+      <span class="demo-beacon" aria-hidden="true"></span>
+      <strong>Demo mode</strong>
+      <span>Not secure · mock data only · never enter patient information</span>
+      <button id="demo-lock-banner" type="button">Lock demo</button>
+    </div>
+
     <div class="app-shell">
       <header class="topbar">
         <a class="brand" href="#" aria-label="LFMM Provider Navigator home">
-          <span class="brand-mark" aria-hidden="true">LF</span>
+          <img class="brand-logo" src="./lfmm-logo.jpeg" alt="" aria-hidden="true" />
           <span>
             <strong>Provider Navigator</strong>
             <small>Labor Force Medical Management</small>
           </span>
         </a>
         <div class="topbar-meta">
+          <button class="demo-access-button" id="demo-access-button" type="button" aria-haspopup="dialog">
+            <span class="lock-glyph" aria-hidden="true"></span>
+            <span id="demo-access-label">Open demo</span>
+          </button>
+          <button class="tracking-button" id="tracking-button" type="button" hidden>
+            Mock referrals <span id="tracking-count">0</span>
+          </button>
           <span class="network-pill"><i></i> Network directory</span>
           <button class="icon-button" id="help-button" type="button" aria-label="How to use this directory" aria-haspopup="dialog">?</button>
         </div>
       </header>
 
-      <section class="search-deck" aria-label="Provider search">
-        <div class="search-field primary-search">
-          <span class="search-icon" aria-hidden="true"></span>
-          <label for="provider-search">Search providers and services</label>
-          <input
-            id="provider-search"
-            type="search"
-            autocomplete="off"
-            placeholder="Doctor, specialty, body area, facility..."
-          />
-          <kbd>⌘ K</kbd>
+      <section class="search-wrap" aria-label="Provider search">
+        <div class="search-deck">
+          <div class="search-field primary-search">
+            <span class="search-icon" aria-hidden="true"></span>
+            <label for="provider-search">Search providers and services</label>
+            <input id="provider-search" type="search" autocomplete="off" placeholder="Doctor, specialty, body area, facility..." />
+            <kbd>Ctrl K</kbd>
+          </div>
+          <div class="search-field location-search">
+            <span class="pin-icon" aria-hidden="true"></span>
+            <label for="location-search">Near</label>
+            <input id="location-search" type="search" autocomplete="postal-code" placeholder="City or ZIP" />
+            <button class="locate-button" id="use-location" type="button" aria-label="Use my current location" title="Use my current location"><span aria-hidden="true">◎</span></button>
+          </div>
+          <button class="search-button" id="search-button" type="button">Search</button>
         </div>
-        <div class="search-field location-search">
-          <span class="pin-icon" aria-hidden="true"></span>
-          <label for="location-search">Near</label>
-          <input id="location-search" type="search" placeholder="City or ZIP" />
-        </div>
-        <button class="search-button" id="search-button" type="button">Search</button>
+        <div class="location-notice" id="location-notice" role="status" aria-live="polite" hidden></div>
       </section>
 
       <nav class="filter-strip" aria-label="Quick filters">
-        <button class="filter-chip active" type="button" data-case="all">All cases</button>
-        <button class="filter-chip" type="button" data-case="Workers’ Comp">Workers’ Comp</button>
-        <button class="filter-chip" type="button" data-case="Personal Injury">Personal Injury</button>
         <label class="select-chip">
-          <span>Specialty</span>
-          <select id="specialty-filter" aria-label="Filter by specialty">
-            <option value="all">All specialties</option>
-            <option value="Orthopedic">Orthopedic</option>
-            <option value="Spine">Spine</option>
-            <option value="General Surgery">General Surgery</option>
-            <option value="Podiatry">Podiatry</option>
-          </select>
+          <span id="specialty-label">All specialties &amp; services</span>
+          <select id="specialty-filter" aria-label="Filter by specialty"></select>
         </label>
         <label class="select-chip">
-          <span>Body area</span>
-          <select id="body-filter" aria-label="Filter by body area">
-            <option value="all">Any body area</option>
-            <option value="Spine">Spine</option>
-            <option value="Shoulder">Shoulder</option>
-            <option value="Knee">Knee</option>
-            <option value="Hand">Hand / wrist</option>
-            <option value="Hip">Hip</option>
-            <option value="Foot">Foot / ankle</option>
-          </select>
+          <span id="body-label">Any body area</span>
+          <select id="body-filter" aria-label="Filter by body area"></select>
         </label>
-        <button class="filter-chip more-filter" id="more-filter" type="button" aria-expanded="false">
-          More filters <span id="advanced-count">0</span>
-        </button>
-        <button class="clear-button" id="clear-filters" type="button">Clear</button>
+        <button class="filter-chip" id="quick-detailed" type="button" aria-pressed="false">Verified details</button>
+        <button class="filter-chip" id="quick-mapped" type="button" aria-pressed="false">On map</button>
+        <button class="filter-chip more-filter" id="more-filter" type="button" aria-expanded="false">More filters <span id="advanced-count">0</span></button>
+        <button class="clear-button" id="clear-filters" type="button">Clear all</button>
       </nav>
 
       <main class="workspace">
@@ -92,21 +80,22 @@
           <div class="results-toolbar">
             <div>
               <p class="eyebrow">MATCHING NETWORK</p>
-              <h1 id="results-heading"><span id="result-count">6</span> providers</h1>
+              <h1 id="results-heading"><span id="result-count">0</span> providers</h1>
             </div>
             <label class="sort-control">
               <span>Sort</span>
               <select id="sort-select" aria-label="Sort results">
                 <option value="recommended">Recommended</option>
+                <option value="distance">Distance</option>
                 <option value="name">Name A–Z</option>
                 <option value="city">City</option>
               </select>
             </label>
           </div>
-          <div class="active-summary" id="active-summary">
-            <span>73 network listings</span>
-            <span>26 detailed profiles</span>
-            <span>24 mapped locations</span>
+          <div class="active-summary" id="active-summary"></div>
+          <div class="area-filter-banner" id="area-filter-banner" hidden>
+            <span>Map area filter is active</span>
+            <button id="clear-map-area" type="button">Clear area</button>
           </div>
           <div class="provider-list" id="provider-list" aria-live="polite"></div>
           <div class="empty-state" id="empty-state" hidden>
@@ -119,15 +108,9 @@
 
         <section class="map-panel" aria-label="Provider locations">
           <div id="map"></div>
-          <div class="map-status" id="map-status">
-            <span class="pulse-dot"></span>
-            Map and list are linked
-          </div>
+          <div class="map-status" id="map-status"><span class="pulse-dot"></span>Map and list are linked</div>
           <button class="map-research" id="map-research" type="button">Search this area</button>
-          <div class="map-legend">
-            <span><i class="legend-dot preferred"></i> Detailed profile</span>
-            <span><i class="legend-dot network"></i> Multiple providers</span>
-          </div>
+          <div class="map-legend" id="map-legend" aria-label="Map category legend"></div>
         </section>
       </main>
       <button class="mobile-view-toggle" id="mobile-view-toggle" type="button" aria-label="Switch between list and map">
@@ -137,18 +120,17 @@
     </div>
 
     <div class="scrim" id="scrim" hidden></div>
-    <aside class="filter-sheet" id="filter-sheet" aria-label="Advanced filters" aria-hidden="true">
-      <div class="filter-sheet-head">
-        <div>
-          <p class="detail-kicker">REFINE RESULTS</p>
-          <h2>More filters</h2>
-        </div>
+
+    <aside class="side-sheet filter-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="Advanced filters" aria-hidden="true">
+      <div class="sheet-head">
+        <div><p class="detail-kicker">REFINE RESULTS</p><h2>More filters</h2></div>
         <button class="sheet-close" id="filter-close" type="button" aria-label="Close filters">×</button>
       </div>
       <fieldset class="filter-group">
         <legend>Directory coverage</legend>
-        <label class="check-row"><input id="detailed-only" type="checkbox" /> <span><strong>Detailed profiles only</strong><small>Has an address and office contact details</small></span></label>
-        <label class="check-row"><input id="mapped-only" type="checkbox" /> <span><strong>Mapped locations only</strong><small>Can be displayed on the map</small></span></label>
+        <label class="check-row"><input id="detailed-only" type="checkbox" /> <span><strong>Verified details only</strong><small>Has source-backed address and office contact details</small></span></label>
+        <label class="check-row"><input id="mapped-only" type="checkbox" /> <span><strong>Mapped locations only</strong><small>Can be displayed and measured on the map</small></span></label>
+        <label class="check-row"><input id="exclude-pending" type="checkbox" /> <span><strong>Exclude pending listings</strong><small>Hide providers marked pending in the source</small></span></label>
       </fieldset>
       <fieldset class="filter-group">
         <legend>Surgery center access</legend>
@@ -158,24 +140,62 @@
         <label class="radio-row"><input type="radio" name="facility" value="ASC" /> <span>Aiden Surgery Center</span></label>
       </fieldset>
       <fieldset class="filter-group">
-        <legend>Profile status</legend>
-        <label class="check-row"><input id="exclude-pending" type="checkbox" /> <span><strong>Exclude pending listings</strong><small>Hide providers marked pending in the source</small></span></label>
+        <legend>Distance radius</legend>
+        <div class="segmented-control" id="radius-control">
+          <label><input type="radio" name="radius" value="25" checked /><span>25 mi</span></label>
+          <label><input type="radio" name="radius" value="50" /><span>50 mi</span></label>
+          <label><input type="radio" name="radius" value="100" /><span>100 mi</span></label>
+        </div>
+        <p class="field-help">Applies after selecting a known city/ZIP or using your current location.</p>
       </fieldset>
-      <div class="filter-sheet-actions">
+      <fieldset class="filter-group filter-group-last">
+        <legend>Case type</legend>
+        <label class="radio-row"><input type="radio" name="case-type" value="all" checked /> <span>All cases</span></label>
+        <label class="radio-row"><input type="radio" name="case-type" value="Workers’ Comp" /> <span>Workers’ Comp</span></label>
+        <label class="radio-row"><input type="radio" name="case-type" value="Personal Injury" /> <span>Personal Injury</span></label>
+        <p class="field-help">Unknown eligibility remains visible unless the source explicitly says no.</p>
+      </fieldset>
+      <div class="sheet-actions filter-sheet-actions">
         <button id="advanced-reset" type="button">Reset</button>
         <button class="primary" id="advanced-apply" type="button">Show results</button>
       </div>
     </aside>
-    <aside class="detail-sheet" id="detail-sheet" aria-label="Provider details" aria-hidden="true">
-      <button class="sheet-close" id="sheet-close" type="button" aria-label="Close details">×</button>
+
+    <aside class="side-sheet detail-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-label="Provider details" aria-hidden="true">
+      <button class="sheet-close floating-close" id="sheet-close" type="button" aria-label="Close details">×</button>
       <div id="detail-content"></div>
     </aside>
 
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
+    <aside class="side-sheet workflow-sheet" id="workflow-sheet" role="dialog" aria-modal="true" aria-label="Mock referral workflow" aria-hidden="true">
+      <button class="sheet-close floating-close" id="workflow-close" type="button" aria-label="Close mock referral">×</button>
+      <div id="workflow-content"></div>
+    </aside>
+
+    <aside class="side-sheet tracking-sheet" id="tracking-sheet" role="dialog" aria-modal="true" aria-label="Mock referral tracking" aria-hidden="true">
+      <button class="sheet-close floating-close" id="tracking-close" type="button" aria-label="Close mock referral tracking">×</button>
+      <div id="tracking-content"></div>
+    </aside>
+
+    <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title">
+      <form id="access-form" method="dialog">
+        <button class="dialog-close" id="access-close" type="button" aria-label="Close">×</button>
+        <span class="access-icon" aria-hidden="true">◇</span>
+        <p class="detail-kicker">CLIENT-SIDE DEMONSTRATION</p>
+        <h2 id="access-title">Open workflow demo</h2>
+        <p>This code only reveals mock UI in this browser tab. It is not authentication and does not protect real information.</p>
+        <div class="demo-warning"><strong>Never enter real patient data.</strong> Everything in the workflow must remain synthetic.</div>
+        <label class="form-field" for="access-code">
+          <span>Demo access code</span>
+          <input id="access-code" name="code" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required />
+          <small id="access-error" role="alert"></small>
+        </label>
+        <button class="primary-button" type="submit">Open demo</button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="./data.js"></script>
     <script src="./app.js"></script>
   </body>
