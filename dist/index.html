@@ -12,6 +12,47 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <svg class="icon-sprite" aria-hidden="true">
+      <symbol id="icon-lock" viewBox="0 0 24 24">
+        <rect x="5.5" y="10" width="13" height="10" rx="2.5"></rect>
+        <path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"></path>
+      </symbol>
+      <symbol id="icon-help" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5"></circle>
+        <path d="M9.8 9.5a2.4 2.4 0 0 1 4.6.9c0 1.8-2.4 2-2.4 3.7"></path>
+        <path d="M12 17.2h.01"></path>
+      </symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24">
+        <circle cx="10.7" cy="10.7" r="6.2"></circle>
+        <path d="m15.2 15.2 4.3 4.3"></path>
+      </symbol>
+      <symbol id="icon-pin" viewBox="0 0 24 24">
+        <path d="M19 10c0 4.7-7 10.5-7 10.5S5 14.7 5 10a7 7 0 1 1 14 0Z"></path>
+        <circle cx="12" cy="10" r="2.2"></circle>
+      </symbol>
+      <symbol id="icon-locate" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5.5"></circle>
+        <circle cx="12" cy="12" r="1.5"></circle>
+        <path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21"></path>
+      </symbol>
+      <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+        <path d="m9.5 5.5 6.5 6.5-6.5 6.5"></path>
+      </symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24">
+        <path d="m6.5 6.5 11 11M17.5 6.5l-11 11"></path>
+      </symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24">
+        <path d="M12 3.5 19 6v5.2c0 4.3-2.8 7.8-7 9.3-4.2-1.5-7-5-7-9.3V6l7-2.5Z"></path>
+        <path d="M9.5 12.1 11.2 14l3.8-4"></path>
+      </symbol>
+      <symbol id="icon-search-off" viewBox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="5.8"></circle>
+        <path d="m14.8 14.8 4.4 4.4M7.8 7.8l5.4 5.4"></path>
+      </symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <path d="m6.5 12.2 3.4 3.5 7.7-8"></path>
+      </symbol>
+    </svg>
     <div class="demo-banner" id="demo-banner" hidden>
       <span class="demo-beacon" aria-hidden="true"></span>
       <strong>Demo mode</strong>
@@ -30,30 +71,34 @@
         </a>
         <div class="topbar-meta">
           <button class="demo-access-button" id="demo-access-button" type="button" aria-haspopup="dialog">
-            <span class="lock-glyph" aria-hidden="true"></span>
+            <svg class="ui-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
             <span id="demo-access-label">Open demo</span>
           </button>
           <button class="tracking-button" id="tracking-button" type="button" hidden>
             Mock referrals <span id="tracking-count">0</span>
           </button>
           <span class="network-pill"><i></i> Network directory</span>
-          <button class="icon-button" id="help-button" type="button" aria-label="How to use this directory" aria-haspopup="dialog">?</button>
+          <button class="icon-button" id="help-button" type="button" aria-label="How to use this directory" aria-haspopup="dialog">
+            <svg class="ui-icon" aria-hidden="true"><use href="#icon-help"></use></svg>
+          </button>
         </div>
       </header>
 
       <section class="search-wrap" aria-label="Provider search">
         <div class="search-deck">
           <div class="search-field primary-search">
-            <span class="search-icon" aria-hidden="true"></span>
+            <svg class="ui-icon search-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
             <label for="provider-search">Search providers and services</label>
             <input id="provider-search" type="search" autocomplete="off" placeholder="Doctor, specialty, body area, facility..." />
             <kbd>Ctrl K</kbd>
           </div>
           <div class="search-field location-search">
-            <span class="pin-icon" aria-hidden="true"></span>
+            <svg class="ui-icon pin-icon" aria-hidden="true"><use href="#icon-pin"></use></svg>
             <label for="location-search">Near</label>
             <input id="location-search" type="search" autocomplete="postal-code" placeholder="City or ZIP" />
-            <button class="locate-button" id="use-location" type="button" aria-label="Use my current location" title="Use my current location"><span aria-hidden="true">◎</span></button>
+            <button class="locate-button" id="use-location" type="button" aria-label="Use my current location" title="Use my current location">
+              <svg class="ui-icon" aria-hidden="true"><use href="#icon-locate"></use></svg>
+            </button>
           </div>
           <button class="search-button" id="search-button" type="button">Search</button>
         </div>
@@ -99,7 +144,7 @@
           </div>
           <div class="provider-list" id="provider-list" aria-live="polite"></div>
           <div class="empty-state" id="empty-state" hidden>
-            <div class="empty-icon">⌁</div>
+            <div class="empty-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search-off"></use></svg></div>
             <h2>No exact matches</h2>
             <p>Try another body area, case type, or nearby city.</p>
             <button type="button" id="empty-reset">Reset filters</button>
@@ -124,7 +169,7 @@
     <aside class="side-sheet filter-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="Advanced filters" aria-hidden="true">
       <div class="sheet-head">
         <div><p class="detail-kicker">REFINE RESULTS</p><h2>More filters</h2></div>
-        <button class="sheet-close" id="filter-close" type="button" aria-label="Close filters">×</button>
+        <button class="sheet-close" id="filter-close" type="button" aria-label="Close filters"><svg class="ui-icon" aria-hidden="true"><use href="#icon-close"></use></svg></button>
       </div>
       <fieldset class="filter-group">
         <legend>Directory coverage</legend>
@@ -162,24 +207,24 @@
     </aside>
 
     <aside class="side-sheet detail-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-label="Provider details" aria-hidden="true">
-      <button class="sheet-close floating-close" id="sheet-close" type="button" aria-label="Close details">×</button>
+      <button class="sheet-close floating-close" id="sheet-close" type="button" aria-label="Close details"><svg class="ui-icon" aria-hidden="true"><use href="#icon-close"></use></svg></button>
       <div id="detail-content"></div>
     </aside>
 
     <aside class="side-sheet workflow-sheet" id="workflow-sheet" role="dialog" aria-modal="true" aria-label="Mock referral workflow" aria-hidden="true">
-      <button class="sheet-close floating-close" id="workflow-close" type="button" aria-label="Close mock referral">×</button>
+      <button class="sheet-close floating-close" id="workflow-close" type="button" aria-label="Close mock referral"><svg class="ui-icon" aria-hidden="true"><use href="#icon-close"></use></svg></button>
       <div id="workflow-content"></div>
     </aside>
 
     <aside class="side-sheet tracking-sheet" id="tracking-sheet" role="dialog" aria-modal="true" aria-label="Mock referral tracking" aria-hidden="true">
-      <button class="sheet-close floating-close" id="tracking-close" type="button" aria-label="Close mock referral tracking">×</button>
+      <button class="sheet-close floating-close" id="tracking-close" type="button" aria-label="Close mock referral tracking"><svg class="ui-icon" aria-hidden="true"><use href="#icon-close"></use></svg></button>
       <div id="tracking-content"></div>
     </aside>
 
     <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title">
       <form id="access-form" method="dialog">
-        <button class="dialog-close" id="access-close" type="button" aria-label="Close">×</button>
-        <span class="access-icon" aria-hidden="true">◇</span>
+        <button class="dialog-close" id="access-close" type="button" aria-label="Close"><svg class="ui-icon" aria-hidden="true"><use href="#icon-close"></use></svg></button>
+        <span class="access-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-shield"></use></svg></span>
         <p class="detail-kicker">CLIENT-SIDE DEMONSTRATION</p>
         <h2 id="access-title">Open workflow demo</h2>
         <p>This code only reveals mock UI in this browser tab. It is not authentication and does not protect real information.</p>

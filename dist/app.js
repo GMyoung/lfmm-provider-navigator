@@ -62,6 +62,10 @@ function categoryFor(group) {
   return CATEGORY_CONFIG[group] || DEFAULT_CATEGORY;
 }
 
+function iconSvg(name, className) {
+  return '<svg class="' + escapeHtml(className || "ui-icon") + '" aria-hidden="true"><use href="#icon-' + escapeHtml(name) + '"></use></svg>';
+}
+
 function serviceGroup(specialty) {
   const value = normalized(specialty);
   if (value.includes("neurospine") || value.includes("ortho spine")) return "Spine";
@@ -439,7 +443,7 @@ function cardTemplate(provider) {
     provider.bodyAreas.slice(0, 2).map((area) => '<span class="badge">' + escapeHtml(area) + "</span>").join(""),
     mockBadge,
     "</span></span>",
-    '<span class="card-arrow" aria-hidden="true">›</span>',
+    '<span class="card-arrow" aria-hidden="true">', iconSvg("chevron-right"), "</span>",
     "</button>"
   ].join("");
 }
@@ -550,8 +554,8 @@ function markerIcon(group, selected) {
   return L.divIcon({
     className: "marker-shell",
     html: '<div class="provider-marker' + (selected ? " selected" : "") + '" style="--marker:' + config.color + '"><span>' + escapeHtml(config.symbol) + "</span></div>",
-    iconSize: [42, 42],
-    iconAnchor: [21, 40]
+    iconSize: [36, 44],
+    iconAnchor: [18, 42]
   });
 }
 
@@ -1214,7 +1218,7 @@ function renderReferralSuccess() {
   const provider = providers.find((item) => item.id === savedReferral.providerId);
   workflowContent.innerHTML = [
     workflowHeader(provider, 2),
-    '<div class="success-panel"><div class="success-mark">✓</div><h3>Saved in this browser</h3>',
+    '<div class="success-panel"><div class="success-mark">', iconSvg("check"), '</div><h3>Saved in this browser</h3>',
     '<p>No message was sent and no shared record was created. This mock referral exists only in local browser storage.</p>',
     '<span class="referral-id">', escapeHtml(savedReferral.id), "</span></div>",
     '<div class="workflow-actions">',
