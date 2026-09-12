@@ -1,6 +1,7 @@
 "use strict";
 
 const source = window.LFMM_DATA || { roster: [], details: {} };
+const locationUtils = window.LFMM_LOCATION_UTILS;
 const DEMO_CODE = "1234";
 const DEMO_SESSION_KEY = "lfmm_demo_unlocked_v1";
 const REFERRAL_STORE_KEY = "lfmm_demo_referrals_v1";
@@ -189,6 +190,7 @@ function safeSessionRead() {
 const state = {
   query: "",
   location: "",
+  locationMode: "none",
   specialty: "all",
   body: "all",
   caseType: "all",
@@ -277,41 +279,6 @@ function caseMatches(provider) {
   return true;
 }
 
-function haversineMiles(lat1, lng1, lat2, lng2) {
-  const toRadians = (degrees) => degrees * Math.PI / 180;
-  const earthRadiusMiles = 3958.7613;
-  const dLat = toRadians(lat2 - lat1);
-  const dLng = toRadians(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2
-    + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) ** 2;
-  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function centroid(items) {
-  if (!items.length) return null;
-  return {
-    lat: items.reduce((sum, provider) => sum + provider.lat, 0) / items.length,
-    lng: items.reduce((sum, provider) => sum + provider.lng, 0) / items.length
-  };
-}
-
-function resolveKnownOrigin(value) {
-  const text = String(value || "").trim();
-  if (!text) return null;
-  const mapped = providers.filter((provider) => provider.lat !== null);
-  const zipMatch = text.match(/\b\d{5}\b/);
-  if (zipMatch) {
-    const matches = mapped.filter((provider) => provider.zip === zipMatch[0]);
-    const point = centroid(matches);
-    if (point) return { lat: point.lat, lng: point.lng, label: zipMatch[0] + " directory centroid", source: "zip" };
-  }
-  const cleanedCity = normalized(text).replace(/\b(il|illinois)\b/g, "").trim();
-  const matches = mapped.filter((provider) => normalized(provider.city) === cleanedCity);
-  const point = centroid(matches);
-  if (point) return { lat: point.lat, lng: point.lng, label: titleCase(cleanedCity) + " directory centroid", source: "city" };
-  return null;
-}
-
 function insideStoredBounds(provider) {
   if (!state.mapBounds || provider.lat === null) return !state.mapBounds;
   const bounds = state.mapBounds;
@@ -324,7 +291,7 @@ function insideStoredBounds(provider) {
 
 function baseMatches(provider) {
   const terms = queryTerms(state.query);
-  const locationTerms = state.origin ? [] : queryTerms(state.location);
+  const locationTerms = state.locationMode === "text" ? queryTerms(state.location) : [];
   const haystack = normalized([
     provider.name,
     provider.specialty,
@@ -374,7 +341,7 @@ function sortProviders(items) {
 function computeResults() {
   let candidates = providers.filter(baseMatches).map((provider) => {
     const distance = state.origin && provider.lat !== null
-      ? haversineMiles(state.origin.lat, state.origin.lng, provider.lat, provider.lng)
+      ? locationUtils.haversineMiles(state.origin.lat, state.origin.lng, provider.lat, provider.lng)
       : null;
     return Object.assign({}, provider, { distance: distance });
   });
@@ -554,8 +521,8 @@ function markerIcon(group, selected) {
   return L.divIcon({
     className: "marker-shell",
     html: '<div class="provider-marker' + (selected ? " selected" : "") + '" style="--marker:' + config.color + '"><span>' + escapeHtml(config.symbol) + "</span></div>",
-    iconSize: [36, 44],
-    iconAnchor: [18, 42]
+    iconSize: [38, 46],
+    iconAnchor: [19, 44]
   });
 }
 
@@ -616,7 +583,7 @@ function renderMarkers(matches) {
     }).addTo(map);
     marker.on("click", () => selectProvider(group[0].id, true));
     const tooltipNames = group.slice(0, 4).map((provider) => escapeHtml(provider.name)).join("<br>");
-    marker.bindTooltip(tooltipNames + (group.length > 4 ? "<br>+" + (group.length - 4) + " more" : ""), { direction: "top", offset: [0, -32] });
+    marker.bindTooltip(tooltipNames + (group.length > 4 ? "<br>+" + (group.length - 4) + " more" : ""), { direction: "top", offset: [0, -36] });
     group.forEach((provider) => markerGroups.set(provider.id, { marker: marker, group: group }));
   });
   const mappedCount = matches.filter((provider) => provider.lat !== null).length;
@@ -750,7 +717,7 @@ function openHelp() {
     "<li>Open a provider to verify office details, eligibility, restrictions, directions, and public phone/fax.</li>",
     "</ol></section>",
     '<section class="detail-section"><h3>Map & data signals</h3><div class="detail-grid">',
-    '<div class="detail-item"><span>Colored marker</span><strong>Provider category; a number means multiple providers share the location</strong></div>',
+    '<div class="detail-item"><span>Colored map pin</span><strong>The center circle shows category initials; a number means multiple providers share the location</strong></div>',
     '<div class="detail-item"><span>Verified detail</span><strong>Source packet includes office and case information</strong></div>',
     '<div class="detail-item"><span>Needs verification</span><strong>Provider appears on a facility roster without a full profile</strong></div>',
     '<div class="detail-item"><span>Mock data</span><strong>Fictional, browser-only content visible in demo mode</strong></div>',
@@ -807,6 +774,7 @@ function resetFilters() {
   Object.assign(state, {
     query: "",
     location: "",
+    locationMode: "none",
     specialty: "all",
     body: "all",
     caseType: "all",
@@ -856,16 +824,24 @@ function performSearch() {
   const preserveBrowserOrigin = state.origin
     && state.origin.source === "browser"
     && normalized(state.location) === "current location";
-  const knownOrigin = preserveBrowserOrigin ? state.origin : resolveKnownOrigin(state.location);
-  if (knownOrigin) {
-    state.origin = knownOrigin;
+  const resolution = preserveBrowserOrigin
+    ? { mode: "origin", origin: state.origin }
+    : locationUtils.resolveLocationSearch(state.location, providers);
+  state.locationMode = resolution.mode;
+  if (resolution.origin) {
+    state.origin = resolution.origin;
     state.sort = "distance";
     sortSelect.value = "distance";
   } else {
     state.origin = null;
     if (state.location) {
-      state.locationMessage = "This static version cannot geocode an arbitrary address. It is matching directory text instead; try an exact listed city, ZIP, or your current location.";
-      state.locationMessageKind = "warning";
+      if (resolution.mode === "text") {
+        state.locationMessage = "Showing providers whose saved directory address matches this location.";
+        state.locationMessageKind = "info";
+      } else {
+        state.locationMessage = "This location is not in the offline map index yet. All providers remain visible so your other filters still work; try a listed city/ZIP or your current location for distance results.";
+        state.locationMessageKind = "warning";
+      }
     }
   }
   render();
@@ -878,6 +854,7 @@ function useCurrentLocation() {
     state.locationMessage = "This browser does not provide location access. Search an exact city or ZIP instead.";
     state.locationMessageKind = "warning";
     state.origin = null;
+    state.locationMode = "none";
     render();
     return;
   }
@@ -893,6 +870,7 @@ function useCurrentLocation() {
       label: "your current location",
       source: "browser"
     };
+    state.locationMode = "origin";
     state.location = "";
     state.mapBounds = null;
     state.sort = "distance";
@@ -905,6 +883,7 @@ function useCurrentLocation() {
     focusCurrentMatches();
   }, () => {
     state.origin = null;
+    state.locationMode = "none";
     state.locationMessage = "Location was unavailable or denied. Search an exact listed city or ZIP instead.";
     state.locationMessageKind = "warning";
     button.classList.remove("loading");
@@ -1402,6 +1381,7 @@ searchInput.addEventListener("input", (event) => {
 
 locationInput.addEventListener("input", (event) => {
   state.location = event.target.value;
+  state.locationMode = "none";
   if (state.origin) {
     state.origin = null;
     state.sort = "recommended";
@@ -1671,7 +1651,9 @@ function registerWebMcpTools() {
       if (location !== undefined) {
         state.location = location;
         locationInput.value = location;
-        state.origin = resolveKnownOrigin(location);
+        const resolution = locationUtils.resolveLocationSearch(location, providers);
+        state.locationMode = resolution.mode;
+        state.origin = resolution.origin;
         if (state.origin) {
           state.sort = "distance";
           sortSelect.value = "distance";
