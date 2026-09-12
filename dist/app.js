@@ -520,9 +520,9 @@ function markerIcon(group, selected) {
   const config = markerCategory(group);
   return L.divIcon({
     className: "marker-shell",
-    html: '<div class="provider-marker' + (selected ? " selected" : "") + '" style="--marker:' + config.color + '"><span>' + escapeHtml(config.symbol) + "</span></div>",
-    iconSize: [38, 46],
-    iconAnchor: [19, 44]
+    html: '<div class="provider-marker' + (selected ? " selected" : "") + '" style="--marker:' + config.color + '"><svg class="provider-marker-shape" viewBox="0 0 32 42" aria-hidden="true" focusable="false"><path d="M16 1.5C8.82 1.5 3 7.32 3 14.5c0 9.55 13 25.5 13 25.5s13-15.95 13-25.5C29 7.32 23.18 1.5 16 1.5Z"/><text class="provider-marker-label" x="16" y="14.5" text-anchor="middle" dominant-baseline="central">' + escapeHtml(config.symbol) + "</text></svg></div>",
+    iconSize: [32, 42],
+    iconAnchor: [16, 40]
   });
 }
 
@@ -583,7 +583,7 @@ function renderMarkers(matches) {
     }).addTo(map);
     marker.on("click", () => selectProvider(group[0].id, true));
     const tooltipNames = group.slice(0, 4).map((provider) => escapeHtml(provider.name)).join("<br>");
-    marker.bindTooltip(tooltipNames + (group.length > 4 ? "<br>+" + (group.length - 4) + " more" : ""), { direction: "top", offset: [0, -36] });
+    marker.bindTooltip(tooltipNames + (group.length > 4 ? "<br>+" + (group.length - 4) + " more" : ""), { direction: "top", offset: [0, -32] });
     group.forEach((provider) => markerGroups.set(provider.id, { marker: marker, group: group }));
   });
   const mappedCount = matches.filter((provider) => provider.lat !== null).length;
@@ -717,7 +717,7 @@ function openHelp() {
     "<li>Open a provider to verify office details, eligibility, restrictions, directions, and public phone/fax.</li>",
     "</ol></section>",
     '<section class="detail-section"><h3>Map & data signals</h3><div class="detail-grid">',
-    '<div class="detail-item"><span>Colored map pin</span><strong>The center circle shows category initials; a number means multiple providers share the location</strong></div>',
+    '<div class="detail-item"><span>Colored map pin</span><strong>Centered white initials show the category; a number means multiple providers share the location</strong></div>',
     '<div class="detail-item"><span>Verified detail</span><strong>Source packet includes office and case information</strong></div>',
     '<div class="detail-item"><span>Needs verification</span><strong>Provider appears on a facility roster without a full profile</strong></div>',
     '<div class="detail-item"><span>Mock data</span><strong>Fictional, browser-only content visible in demo mode</strong></div>',

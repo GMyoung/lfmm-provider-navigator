@@ -30,6 +30,8 @@ jobs:
           node --check dist/location-utils.js
       - name: Test offline location search
         run: node tests/location-search.test.mjs
+      - name: Test map marker alignment
+        run: node tests/marker-geometry.test.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static site

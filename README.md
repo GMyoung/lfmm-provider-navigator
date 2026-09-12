@@ -7,7 +7,7 @@ A polished, map-based provider directory prototype for Labor Force Medical Manag
 - Search by provider, specialty, practice, service, city, or ZIP
 - Browser-location and known city/ZIP distance search with 25/50/100-mile radius expansion, including an offline center for 60603
 - Filters for specialty, body area, case type, surgery-center access, record completeness, map availability, and current map bounds
-- Category-coded markers, a live legend, and synchronized provider list/map
+- Slim, centered category-coded map pins, a live legend, and synchronized provider list/map
 - Detailed provider panels with office details, case rules, restrictions, directions, and click-to-call
 - Responsive list/map modes for desktop and mobile
 - A client-side demo mode, opened with code 1234, that reveals only fictional workflow contacts and availability
@@ -43,10 +43,11 @@ python -m http.server 4173 --directory dist
 
 Then open `http://127.0.0.1:4173/`.
 
-Run the offline location regression test with:
+Run the offline location and marker-alignment regression tests with:
 
 ```powershell
 node tests/location-search.test.mjs
+node tests/marker-geometry.test.mjs
 ```
 
 ## Structure
@@ -57,6 +58,7 @@ node tests/location-search.test.mjs
 - `dist/location-utils.js` — offline ZIP/city resolution and distance helpers
 - `dist/app.js` — search, filters, map synchronization, demo workflow, and local mock tracking
 - `tests/location-search.test.mjs` — regression coverage for 60603, provider ZIPs, distance results, and unknown ZIP fallback
+- `tests/marker-geometry.test.mjs` — regression coverage for slim marker geometry, centerline alignment, and the circle-free label
 - `dist/lfmm-logo.jpeg` — supplied LFMM brand logo
 - `.openai/hosting.json` — Sites deployment configuration
 
