@@ -27,6 +27,7 @@ jobs:
         run: |
           node --check dist/app.js
           node --check dist/data.js
+          node --check dist/zip-centers.js
           node --check dist/location-utils.js
       - name: Test offline location search
         run: node tests/location-search.test.mjs

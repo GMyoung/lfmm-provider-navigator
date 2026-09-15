@@ -711,7 +711,7 @@ function openHelp() {
     '<p class="detail-subtitle">Search broadly, then narrow by clinical fit, case rules, coverage, and distance.</p></div>',
     '<section class="detail-section"><h3>Recommended workflow</h3><ol class="guide-list">',
     "<li>Search a provider, specialty, service, practice, city, or ZIP.</li>",
-    "<li>Select a known city/ZIP—or use your browser location—to calculate distance without a geocoding API.</li>",
+    "<li>Enter a five-digit U.S. ZIP—or use your browser location—to calculate distance without a geocoding API.</li>",
     "<li>Choose specialty and body area. Open More filters for case type, facility, profile status, and 25/50/100-mile radius.</li>",
     "<li>Move the map and choose Search this area to filter the list to the visible bounds.</li>",
     "<li>Open a provider to verify office details, eligibility, restrictions, directions, and public phone/fax.</li>",
@@ -721,7 +721,7 @@ function openHelp() {
     '<div class="detail-item"><span>Verified detail</span><strong>Source packet includes office and case information</strong></div>',
     '<div class="detail-item"><span>Needs verification</span><strong>Provider appears on a facility roster without a full profile</strong></div>',
     '<div class="detail-item"><span>Mock data</span><strong>Fictional, browser-only content visible in demo mode</strong></div>',
-    "</div></section>",
+    '</div><p class="verification-note">ZIP center coordinates are derived from <a href="https://www.geonames.org/" target="_blank" rel="noreferrer">GeoNames</a> postal-code data under CC BY 4.0.</p></section>',
     '<section class="detail-section"><h3>Demo mode boundary</h3>',
     '<p class="demo-warning"><strong>The access code is not security.</strong> Demo mode shows only fabricated contacts and saves synthetic referrals in this browser. Never enter patient information.</p>',
     '<p class="verification-note">Arbitrary street-address geocoding, real sign-in, email delivery, shared records, audit logs, and secure patient workflows require a backend and approved services.</p></section>'
@@ -839,7 +839,7 @@ function performSearch() {
         state.locationMessage = "Showing providers whose saved directory address matches this location.";
         state.locationMessageKind = "info";
       } else {
-        state.locationMessage = "This location is not in the offline map index yet. All providers remain visible so your other filters still work; try a listed city/ZIP or your current location for distance results.";
+        state.locationMessage = "This location is not recognized as a five-digit U.S. ZIP or saved provider city. All providers remain visible so your other filters still work.";
         state.locationMessageKind = "warning";
       }
     }
@@ -1611,7 +1611,7 @@ function registerWebMcpTools() {
       type: "object",
       properties: {
         query: { type: "string", maxLength: 120 },
-        location: { type: "string", maxLength: 80, description: "Exact listed city or ZIP." },
+        location: { type: "string", maxLength: 80, description: "Five-digit U.S. ZIP or exact saved provider city." },
         specialty: { type: "string" },
         bodyArea: { type: "string" },
         caseType: { type: "string", enum: ["all", "Workers’ Comp", "Personal Injury"] },

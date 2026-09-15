@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 globalThis.window = globalThis;
 await import("../dist/data.js");
+await import("../dist/zip-centers.js");
 await import("../dist/location-utils.js");
 
 const details = globalThis.LFMM_DATA.details;
@@ -14,17 +15,30 @@ const providers = Object.values(details).map((detail) => ({
   lng: Number.isFinite(detail.lng) ? detail.lng : null
 }));
 const locationUtils = globalThis.LFMM_LOCATION_UTILS;
+const zipCenters = globalThis.LFMM_ZIP_CENTERS;
 
 const html = await readFile(new URL("../dist/index.html", import.meta.url), "utf8");
 assert.ok(
-  html.indexOf("./location-utils.js") > html.indexOf("./data.js")
+  html.indexOf("./zip-centers.js") > html.indexOf("./data.js")
+    && html.indexOf("./location-utils.js") > html.indexOf("./zip-centers.js")
     && html.indexOf("./location-utils.js") < html.indexOf("./app.js"),
-  "location utilities should load after provider data and before the application"
+  "ZIP centers and location utilities should load after provider data and before the application"
 );
+assert.ok(Object.keys(zipCenters).length >= 40000, "the offline ZIP index should provide nationwide coverage");
 
 const downtown = locationUtils.resolveLocationSearch("60603", providers);
-assert.equal(downtown.mode, "origin", "60603 should resolve to an offline distance-search origin");
+assert.equal(downtown.mode, "origin", "60603 should resolve to a nationwide offline distance-search origin");
 assert.ok(downtown.origin, "60603 should include coordinates");
+
+const downtownEast = locationUtils.resolveLocationSearch("60604", providers);
+assert.equal(downtownEast.mode, "origin", "60604 should resolve from the nationwide ZIP index");
+assert.ok(downtownEast.origin, "60604 should include coordinates");
+
+const outOfState = locationUtils.resolveLocationSearch("90210", providers);
+assert.equal(outOfState.mode, "origin", "a valid out-of-state ZIP should resolve from the nationwide ZIP index");
+
+const territory = locationUtils.resolveLocationSearch("00601", providers);
+assert.equal(territory.mode, "origin", "a valid U.S. territory ZIP should resolve from the nationwide ZIP index");
 
 const nearby = providers.filter((provider) => provider.lat !== null && (
   locationUtils.haversineMiles(
@@ -42,4 +56,4 @@ assert.equal(exactProviderZip.mode, "origin", "a provider ZIP should continue to
 const unknownZip = locationUtils.resolveLocationSearch("99999", providers);
 assert.equal(unknownZip.mode, "unresolved", "an unknown ZIP should not become a zero-result text filter");
 
-console.log(`location regression passed: ${nearby.length} providers within 25 miles of 60603`);
+console.log("location regression passed: " + Object.keys(zipCenters).length + " ZIP centers; " + nearby.length + " providers within 25 miles of 60603");

@@ -5,7 +5,7 @@ A polished, map-based provider directory prototype for Labor Force Medical Manag
 ## What the no-backend prototype includes
 
 - Search by provider, specialty, practice, service, city, or ZIP
-- Browser-location and known city/ZIP distance search with 25/50/100-mile radius expansion, including an offline center for 60603
+- Browser-location and nationwide five-digit U.S. ZIP distance search with 25/50/100-mile radius expansion
 - Filters for specialty, body area, case type, surgery-center access, record completeness, map availability, and current map bounds
 - Slim, centered category-coded map pins, a live legend, and synchronized provider list/map
 - Detailed provider panels with office details, case rules, restrictions, directions, and click-to-call
@@ -31,7 +31,7 @@ The code 1234 is a visible client-side demo switch, not authentication. Demo con
 
 True sign-in, protected sensitive information, real patient submissions, email delivery, shared records, audit logs, arbitrary address geocoding, and multi-user synchronization require an approved backend and are intentionally out of scope.
 
-If a location is not yet available in the offline location index and does not match a saved provider address, the directory keeps all providers visible and shows a warning. This prevents an unresolved ZIP from locking every other filter at zero results.
+Five-digit U.S. ZIP searches use a bundled offline coordinate index, so no ZIP lookup is sent to an external service. Non-ZIP location text that is not a saved provider city or address remains unresolved; the directory keeps all providers visible and shows a warning instead of locking every other filter at zero results.
 
 ## Run locally
 
@@ -55,11 +55,17 @@ node tests/marker-geometry.test.mjs
 - `dist/index.html` — page structure and accessible controls
 - `dist/styles.css` — responsive visual system
 - `dist/data.js` — sanitized provider roster and details
+- `dist/zip-centers.js` — generated nationwide U.S. ZIP center index
 - `dist/location-utils.js` — offline ZIP/city resolution and distance helpers
 - `dist/app.js` — search, filters, map synchronization, demo workflow, and local mock tracking
 - `tests/location-search.test.mjs` — regression coverage for 60603, provider ZIPs, distance results, and unknown ZIP fallback
 - `tests/marker-geometry.test.mjs` — regression coverage for slim marker geometry, centerline alignment, and the circle-free label
+- `scripts/build-zip-centers.mjs` — reproducible GeoNames-to-browser index builder
 - `dist/lfmm-logo.jpeg` — supplied LFMM brand logo
 - `.openai/hosting.json` — Sites deployment configuration
 
 The original PDFs are source material and are intentionally not committed to this repository.
+
+## ZIP data attribution
+
+ZIP center coordinates for the 50 states, District of Columbia, and U.S. territories that use five-digit ZIP codes are derived from [GeoNames Postal Code Data](https://download.geonames.org/export/zip/) and distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). GeoNames notes that postal-code coordinates may be estimated and are provided without warranty.

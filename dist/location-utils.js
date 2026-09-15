@@ -1,8 +1,8 @@
 (function attachLocationUtils(root) {
   "use strict";
 
-  const OFFLINE_ZIP_CENTERS = Object.freeze({
-    "60603": { lat: 41.8806, lng: -87.6277 }
+  const OFFLINE_ZIP_CENTERS = root.LFMM_ZIP_CENTERS || Object.freeze({
+    "60603": [41.8806, -87.6277]
   });
 
   function normalize(value) {
@@ -49,8 +49,8 @@
       const offlinePoint = OFFLINE_ZIP_CENTERS[zipMatch[0]];
       if (offlinePoint) {
         return {
-          lat: offlinePoint.lat,
-          lng: offlinePoint.lng,
+          lat: offlinePoint[0],
+          lng: offlinePoint[1],
           label: zipMatch[0] + " center",
           source: "offline-zip"
         };
